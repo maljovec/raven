@@ -37,6 +37,9 @@ import numpy as np
 import abc
 import ast
 import copy
+import matplotlib
+matplotlib.use('Agg')
+import matplotlib.pyplot as plt
 #External Modules End-----------------------------------------------------------
 #Internal Modules---------------------------------------------------------------
 from utils import utils
@@ -1296,7 +1299,6 @@ class Scipy(unSupervisedLearning):
       @ In, None
       @ Out, None
     """
-    import matplotlib.pylab as plt
     plt.figure()
     max_d = kwargs.pop('max_d', None)
     if max_d and 'color_threshold' not in kwargs:
