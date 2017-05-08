@@ -1041,11 +1041,11 @@ class OutStreamPlot(OutStreamManager):
               self.plt3D.set_ylim3d(ymin = ast.literal_eval(axes_range['ymin']))
             if 'ymax' in axes_range.keys():
               self.plt3D.set_ylim3d(ymax = ast.literal_eval(axes_range['ymax']))
-            if 'zmin' in axes_range.options['plotSettings']['plot'][pltindex].keys():
-              if 'zmax' not in axes_range.options['plotSettings'].keys():
+            if 'zmin' in axes_range.keys():
+              if 'zmax' not in axes_range.keys():
                 self.raiseAWarning('zmin inputted but not zmax. zmin ignored! ')
               else:
-                self.plt3D.set_zlim(ast.literal_eval(axes_range['zmin']), ast.literal_eval(self.options['plotSettings']['zmax']))
+                self.plt3D.set_zlim(ast.literal_eval(axes_range['zmin']), ast.literal_eval(axes_range['zmax']))
             if 'zmax' in axes_range.keys():
               if 'zmin' not in axes_range.keys():
                 self.raiseAWarning('zmax inputted but not zmin. zmax ignored! ')
