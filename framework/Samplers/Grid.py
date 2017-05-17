@@ -179,37 +179,43 @@ class Grid(ForwardSampler):
         if self.distDict[varName].getDisttype() == 'Discrete':
           weight *= self.distDict[varName].pdf(coordinates[varName])
         else:
+          probWeightName = 'ProbabilityWeight-'+varName.replace(",","-")
           if self.gridInfo[varName]=='CDF':
-            if coordinatesPlusOne[varName] != sys.maxsize and coordinatesMinusOne[varName] != -sys.maxsize:
-              midPlusCDF   = (coordinatesPlusOne[varName]+self.distDict[varName].cdf(self.values[key]))/2.0
-              midMinusCDF  = (coordinatesMinusOne[varName]+self.distDict[varName].cdf(self.values[key]))/2.0
-              self.inputInfo['ProbabilityWeight-'+varName.replace(",","-")] = midPlusCDF - midMinusCDF
-              weight *= midPlusCDF - midMinusCDF
-            if coordinatesMinusOne[varName] == -sys.maxsize:
+            if coordinatesPlusOne[varName] == sys.maxsize and coordinatesMinusOne[varName] == -sys.maxsize:
+              weight = 1.0
+            elif coordinatesMinusOne[varName] == -sys.maxsize:
               midPlusCDF   = (coordinatesPlusOne[varName]+self.distDict[varName].cdf(self.values[key]))/2.0
               midMinusCDF  = 0.0
-              self.inputInfo['ProbabilityWeight-'+varName.replace(",","-")] = midPlusCDF - midMinusCDF
+              self.inputInfo[probWeightName] = midPlusCDF - midMinusCDF
               weight *= midPlusCDF - midMinusCDF
-            if coordinatesPlusOne[varName] == sys.maxsize:
+            elif coordinatesPlusOne[varName] == sys.maxsize:
               midPlusCDF   = 1.0
               midMinusCDF  = (coordinatesMinusOne[varName]+self.distDict[varName].cdf(self.values[key]))/2.0
-              self.inputInfo['ProbabilityWeight-'+varName.replace(",","-")] = midPlusCDF - midMinusCDF
+              self.inputInfo[probWeightName] = midPlusCDF - midMinusCDF
+              weight *= midPlusCDF - midMinusCDF
+            else:
+              ## Normal Case
+              midPlusCDF   = (coordinatesPlusOne[varName]+self.distDict[varName].cdf(self.values[key]))/2.0
+              midMinusCDF  = (coordinatesMinusOne[varName]+self.distDict[varName].cdf(self.values[key]))/2.0
+              self.inputInfo[probWeightName] = midPlusCDF - midMinusCDF
               weight *= midPlusCDF - midMinusCDF
           else:
             # Value
-            if coordinatesPlusOne[varName] != sys.maxsize and coordinatesMinusOne[varName] != -sys.maxsize:
+            if coordinatesPlusOne[varName] == sys.maxsize and coordinatesMinusOne[varName] == -sys.maxsize:
+              weight = 1.0
+            elif coordinatesMinusOne[varName] == -sys.maxsize:
+              midPlusValue   = (self.values[key]+coordinatesPlusOne[varName])/2.0
+              self.inputInfo[probWeightName] = self.distDict[varName].cdf(midPlusValue)
+              weight *= self.distDict[varName].cdf(midPlusValue)
+            elif coordinatesPlusOne[varName] == sys.maxsize:
+              midMinusValue  = (self.values[key]+coordinatesMinusOne[varName])/2.0
+              self.inputInfo[probWeightName] = 1.0 - self.distDict[varName].cdf(midMinusValue)
+              weight *= 1.0 - self.distDict[varName].cdf(midMinusValue)
+            else:
               midPlusValue   = (self.values[key]+coordinatesPlusOne[varName])/2.0
               midMinusValue  = (self.values[key]+coordinatesMinusOne[varName])/2.0
               weight *= self.distDict[varName].cdf(midPlusValue) - self.distDict[varName].cdf(midMinusValue)
-              self.inputInfo['ProbabilityWeight-'+varName.replace(",","-")] = self.distDict[varName].cdf(midPlusValue) - self.distDict[varName].cdf(midMinusValue)
-            if coordinatesMinusOne[varName] == -sys.maxsize:
-              midPlusValue   = (self.values[key]+coordinatesPlusOne[varName])/2.0
-              self.inputInfo['ProbabilityWeight-'+varName.replace(",","-")] = self.distDict[varName].cdf(midPlusValue) - 0.0
-              weight *= self.distDict[varName].cdf(midPlusValue) - 0.0
-            if coordinatesPlusOne[varName] == sys.maxsize:
-              midMinusValue  = (self.values[key]+coordinatesMinusOne[varName])/2.0
-              self.inputInfo['ProbabilityWeight-'+varName.replace(",","-")] = 1.0 - self.distDict[varName].cdf(midMinusValue)
-              weight *= 1.0 - self.distDict[varName].cdf(midMinusValue)
+              self.inputInfo[probWeightName] = self.distDict[varName].cdf(midPlusValue) - self.distDict[varName].cdf(midMinusValue)
       # ND variable
       else:
         if self.variables2distributionsMapping[varName]['reducedDim']==1:
