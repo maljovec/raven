@@ -36,6 +36,7 @@ from .SensitivityView import SensitivityView
 from .FitnessView import FitnessView
 from .ScatterView2D import ScatterView2D
 from .ScatterView3D import ScatterView3D
+from .DataInterpreterDialog import DataInterpreterDialog
 
 import time
 import sys
@@ -274,3 +275,90 @@ class TopologyWindow(qtw.QMainWindow):
     """
     self.closed.emit(self)
     return super(TopologyWindow,self).closeEvent(event)
+
+  def loadData(self):
+    # Open file Dialog and read the data into an array
+    dialog = qtw.QFileDialog(self,filter='*.csv')
+    dialog.setFileMode(qtw.QFileDialog.ExistingFile)
+    dialog.exec_()
+
+    def RaiseErrorMessage(err):
+      msgBox = qtw.QMessageBox()
+      msgBox.setWindowTitle('File Error')
+      msgBox.setText(myFile + ' is invalid.')
+      msgBox.setText(str(err))
+      msgBox.addButton('Abort',qtw.QMessageBox.RejectRole)
+      msgBox.addButton('Continue',qtw.QMessageBox.AcceptRole)
+      msgBox.exec_()
+      return (msgBox.result() == qtw.QMessageBox.Accepted)
+
+    if dialog.result() == qtw.QMessageBox.Accepted:
+      myFile = dialog.selectedFiles()[0]
+      try:
+        fin = open(myFile)
+        firstLine = fin.readline().strip()
+        names = re.split(',|;| |\t', firstLine)
+        data = []
+        numCols = len(names)
+        lineNumber = 1
+        for line in fin:
+          line = line.strip()
+          lineNumber += 1
+          if len(line) == 0:
+            continue
+          tokens = re.split(',|;| |\t', line)
+          if numCols != len(tokens):
+            errorMessage = 'Data size is inconsistent.\n\n' \
+                           + 'Header line: ' + str(numCols) + ' Columns vs. ' \
+                           +'Line ' + str(lineNumber) + ': ' \
+                           + str(len(tokens)) + ' Columns\n\nBad line:\n' + line
+            if RaiseErrorMessage(IOError(errorMessage)):
+              continue
+            else:
+              break
+          dataRow = []
+          for token in tokens:
+            try:
+              value = float(token)
+            except ValueError:
+              break
+            dataRow.append(value)
+          if len(dataRow) == numCols:
+            data.append(dataRow)
+          else:
+            errorMessage = 'Bad data encountered at line '+ str(lineNumber) \
+                           + ':\n\nBad line:\n' + line
+            if not RaiseErrorMessage(IOError(errorMessage)):
+              break
+        fin.close()
+      except (IOError) as e:
+        RaiseErrorMessage(e)
+        return False
+    else:
+      return False
+
+    # Pass to data explainer and build the AMSC from that description
+    return self.PrepareSegmentation(names,np.array(data))
+
+  def PrepareSegmentation(self,names,data):
+    dialog = DataInterpreterDialog(self,names,data)
+    dialog.exec_()
+    if dialog.result() != qtw.QDialog.Accepted:
+      return False
+
+    X = data[:,dialog.inputColumns]
+    Y = data[:,dialog.outputColumn]
+    w = dialog.weights
+    dimNames = []
+    for i in (dialog.inputColumns+[dialog.outputColumn]):
+      dimNames.append(names[i])
+    graph = dialog.graph
+    gradient = dialog.gradient
+    knn = dialog.k
+    beta = dialog.beta
+    normalization = dialog.normalization
+
+    self.BuildAMSC(X, Y, w, dimNames, graph, gradient, knn, beta, normalization)
+    # if w is None:
+    #   self.probabilityEdit()
+    return True

@@ -34,6 +34,7 @@ from .SensitivityView import SensitivityView
 from .TopologyMapView import TopologyMapView
 from .HierarchyWindow import HierarchyWindow
 from .TopologyWindow import TopologyWindow
+from .DataInterpreterDialog import DataInterpreterDialog
 
 ## As these are not exposed to the user, we do not need a factory to dynamically
 ## allocate them. They will be explicitly called when needed everywhere in the

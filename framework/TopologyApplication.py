@@ -14,12 +14,13 @@ if __name__ == '__main__':
 
   X = None
   Y = None
-  if len(sys.argv) > 1:
-    print('\tYou probably want me to load a file...')
-    print('\tThe Maker has not included this in my programming.')
+  # if len(sys.argv) > 1:
+  #   print('\tYou probably want me to load a file...')
+  #   print('\tThe Maker has not included this in my programming.')
 
   from UI import TopologyWindow
 
   main = TopologyWindow(X,Y)
+  main.loadData()
   main.show()
   sys.exit(app.exec_())
