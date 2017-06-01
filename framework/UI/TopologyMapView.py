@@ -91,7 +91,6 @@ class CustomPathItem(qtw.QGraphicsPathItem):
           in its tooltip.
     """
     super(CustomPathItem, self).__init__(path,parent)
-    self.setScene(scene)
     self.graphics = []
     self.tipSize = qtc.QSize(0,0)
 
@@ -111,9 +110,11 @@ class CustomPathItem(qtw.QGraphicsPathItem):
 
     cBox = qtg.QPainterPath() # context pop-up box
     cBox.addRoundedRect(0,0,self.tipSize.width(),self.tipSize.height(),1,1)
-    gBox = self.scene().addPath(cBox)
-    gBox.setVisible(False)
-    self.graphics.append((cBox,gBox))
+    if scene is not None:
+      gBox = scene.addPath(cBox)
+    # gBox = self.scene().addPath(cBox)
+      gBox.setVisible(False)
+      self.graphics.append((cBox,gBox))
 
     # We can add more graphics to the tooltip by following this template,
     ##  where you should specify a pen and brush unlike the example above which
@@ -124,11 +125,13 @@ class CustomPathItem(qtw.QGraphicsPathItem):
       fontWidth = fm.width(text)
       ## Center the text on the tooltip
       cKey.addText(qtc.QPointF((self.tipSize.width()-fontWidth)/2.,yPos),font,text)
-    gText = self.scene().addPath(cKey)
-    gText.setPen(qtg.QPen(qtg.QColor('#333333')))
-    gText.setBrush(qtg.QBrush(qtg.QColor('#333333')))
-    gText.setVisible(False)
-    self.graphics.append((cKey,gText))
+    # gText = self.scene().addPath(cKey)
+    if scene is not None:
+      gText = scene.addPath(cKey)
+      gText.setPen(qtg.QPen(qtg.QColor('#333333')))
+      gText.setBrush(qtg.QBrush(qtg.QColor('#333333')))
+      gText.setVisible(False)
+      self.graphics.append((cKey,gText))
 
     yPos += fontHeight
     ##  End template
@@ -153,11 +156,13 @@ class CustomPathItem(qtw.QGraphicsPathItem):
       label += ' '
       cText = qtg.QPainterPath() # contextual pop-up text
       cText.addText(qtc.QPointF(padding,yPos),font,label)
-      gText = self.scene().addPath(cText)
-      gText.setPen(qtg.QPen(qtg.QColor('#333333')))
-      gText.setBrush(qtg.QBrush(qtg.QColor('#333333')))
-      gText.setVisible(False)
-      self.graphics.append((cText,gText))
+      if scene is not None:
+        # gText = self.scene().addPath(cText)
+        gText = scene.addPath(cText)
+        gText.setPen(qtg.QPen(qtg.QColor('#333333')))
+        gText.setBrush(qtg.QBrush(qtg.QColor('#333333')))
+        gText.setVisible(False)
+        self.graphics.append((cText,gText))
 
       xPos = padding + fm.width(label)
 
@@ -168,11 +173,13 @@ class CustomPathItem(qtw.QGraphicsPathItem):
 
       cDimBox = qtg.QPainterPath() # contextual pop-up text
       cDimBox.addRect(boxX,boxY,boxW,boxH)
-      gDimBox = self.scene().addPath(cDimBox)
-      gDimBox.setPen(qtg.QPen(qtg.QColor('#333333')))
-      gDimBox.setBrush(qtg.QBrush(qtg.QColor('#FFFFFF')))
-      gDimBox.setVisible(False)
-      self.graphics.append((cDimBox,gDimBox))
+      if scene is not None:
+        # gDimBox = self.scene().addPath(cDimBox)
+        gDimBox = scene.addPath(cDimBox)
+        gDimBox.setPen(qtg.QPen(qtg.QColor('#333333')))
+        gDimBox.setBrush(qtg.QBrush(qtg.QColor('#FFFFFF')))
+        gDimBox.setVisible(False)
+        self.graphics.append((cDimBox,gDimBox))
 
       cDimSpan = qtg.QPainterPath() # contextual pop-up text
       x = (boxW)/(maxVal-minVal)*(min(vals)-minVal) + boxX
@@ -180,11 +187,13 @@ class CustomPathItem(qtw.QGraphicsPathItem):
       w = (boxW)/(maxVal-minVal)*(max(vals)-minVal) + boxX - x
       h = boxH
       cDimSpan.addRect(x,y,w,h)
-      gDimSpan = self.scene().addPath(cDimSpan)
-      gDimSpan.setPen(qtg.QPen(qtg.QColor('#333333')))
-      gDimSpan.setBrush(qtg.QBrush(qtg.QColor('#CCCCCC')))
-      gDimSpan.setVisible(False)
-      self.graphics.append((cDimSpan,gDimSpan))
+      if scene is not None:
+        # gDimSpan = self.scene().addPath(cDimSpan)
+        gDimSpan = scene.addPath(cDimSpan)
+        gDimSpan.setPen(qtg.QPen(qtg.QColor('#333333')))
+        gDimSpan.setBrush(qtg.QBrush(qtg.QColor('#CCCCCC')))
+        gDimSpan.setVisible(False)
+        self.graphics.append((cDimSpan,gDimSpan))
 
       ##########################################################################
       ## Histogram Sparkline
@@ -199,11 +208,13 @@ class CustomPathItem(qtw.QGraphicsPathItem):
           h = float(bin)/float(maxCount)*boxH
           y = boxY+boxH - h
           cDimHist.addRect(x,y,w,h)
-        gDimHist = self.scene().addPath(cDimHist)
-        gDimHist.setPen(qtc.Qt.NoPen)#qtg.QPen(qtg.QColor('#CCCCCC')))
-        gDimHist.setBrush(qtg.QBrush(qtg.QColor('#333333')))
-        gDimHist.setVisible(False)
-        self.graphics.append((cDimHist,gDimHist))
+        if scene is not None:
+          # gDimHist = self.scene().addPath(cDimHist)
+          gDimHist = scene.addPath(cDimHist)
+          gDimHist.setPen(qtg.QPen(qtc.Qt.NoPen))#qtg.QPen(qtg.QColor('#CCCCCC')))
+          gDimHist.setBrush(qtg.QBrush(qtg.QColor('#333333')))
+          gDimHist.setVisible(False)
+          self.graphics.append((cDimHist,gDimHist))
 
       ##########################################################################
       ## Scatter Sparkline
@@ -219,11 +230,13 @@ class CustomPathItem(qtw.QGraphicsPathItem):
           w = .2
           h = .2
           cDimScatter.addRect(x,y,w,h)
-        gDimScatter = self.scene().addPath(cDimScatter)
-        gDimScatter.setPen(qtc.Qt.NoPen)#qtg.QPen(qtg.QColor('#CCCCCC')))
-        gDimScatter.setBrush(qtg.QBrush(qtg.QColor('#333333')))
-        gDimScatter.setVisible(False)
-        self.graphics.append((cDimScatter,gDimScatter))
+        if scene is not None:
+          # gDimScatter = self.scene().addPath(cDimScatter)
+          gDimScatter = scene.addPath(cDimScatter)
+          gDimScatter.setPen(qtg.QPen(qtc.Qt.NoPen))#qtg.QPen(qtg.QColor('#CCCCCC')))
+          gDimScatter.setBrush(qtg.QBrush(qtg.QColor('#333333')))
+          gDimScatter.setVisible(False)
+          self.graphics.append((cDimScatter,gDimScatter))
 
       ##########################################################################
 
@@ -335,7 +348,7 @@ class CustomPathItem(qtw.QGraphicsPathItem):
     super(CustomPathItem,self).setPen(pen)
     bgColor = pen.color()
     bgColor.setAlpha(50)
-    for i in xrange(4,len(self.graphics),4):
+    for i in range(4,len(self.graphics),4):
       self.graphics[i][1].setBrush(qtg.QBrush(pen.color().lighter()))
       self.graphics[i+1][1].setBrush(qtg.QBrush(pen.color().darker()))
 
@@ -795,7 +808,7 @@ class TopologyMapView(BaseTopologicalView):
       ys = self.amsc.Y[np.array(items)]
       lineWidth = (self.maxDiameter+self.minDiameter)/2.
 
-      pen = qtc.Qt.NoPen#qtg.QPen(qtc.Qt.black)
+      pen = qtg.QPen(qtc.Qt.NoPen)#qtg.QPen(qtc.Qt.black)
 
       fillColor = qtg.QColor(colorMap[extPair])
       fillColor.setAlpha(200)
@@ -878,7 +891,7 @@ class TopologyMapView(BaseTopologicalView):
           startTheta = 0
 
         radius = diameter/2.
-        for i in xrange(3):
+        for i in range(3):
           theta = startTheta+i*120
           theta = theta*math.pi/180.
           triangle.append(qtc.QPointF(x+radius*math.cos(theta),y-radius*math.sin(theta)))

@@ -54,6 +54,7 @@ class DataInterpreterDialog(QDialog):
     self.normCmbBox.addItem('None')
     self.normCmbBox.addItem('Range Scaling')
     self.normCmbBox.addItem('Z-Score Standardization')
+    self.normCmbBox.setCurrentIndex(2)
     layout.addWidget(self.normCmbBox,row,col)
 
     row += 1
