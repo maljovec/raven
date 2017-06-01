@@ -1,5 +1,6 @@
-from PySide import QtCore as qtc
-from PySide import QtGui as qtg
+from qtpy import QtCore as qtc
+from qtpy import QtGui as qtg
+from qtpy import QtWidgets as qtw
 
 import sys
 import os
@@ -9,7 +10,7 @@ sys.path.append(os.path.join(myPath,'contrib','AMSC'))
 
 # We will not support external running of this UI, it shall be run from RAVEN
 if __name__ == '__main__':
-  app = qtg.QApplication(sys.argv)
+  app = qtw.QApplication(sys.argv)
 
   X = None
   Y = None
