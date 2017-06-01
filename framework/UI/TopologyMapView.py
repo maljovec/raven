@@ -90,7 +90,8 @@ class CustomPathItem(qtw.QGraphicsPathItem):
         @ In, data, a dictionary of data for this graphical item to display
           in its tooltip.
     """
-    super(CustomPathItem, self).__init__(path,parent,scene)
+    super(CustomPathItem, self).__init__(path,parent)
+    self.setScene(scene)
     self.graphics = []
     self.tipSize = qtc.QSize(0,0)
 
@@ -407,7 +408,7 @@ class TopologyMapView(BaseTopologicalView):
     self.scene.selectionChanged.connect(self.select)
 
     mergeSequence = self.amsc.GetMergeSequence()
-    pCount = len(set([p for idx,(parent,p) in mergeSequence.iteritems()]))-1
+    pCount = len(set([p for idx,(parent,p) in mergeSequence.items()]))-1
 
     self.rightClickMenu = qtw.QMenu()
     persAction = self.rightClickMenu.addAction('Set Persistence Here')
@@ -446,7 +447,7 @@ class TopologyMapView(BaseTopologicalView):
     self.gView.scale(self.gView.width()/self.scene.width(),
                      self.gView.height()/self.scene.height())
 
-    persistences = [p for idx,(parent,p) in mergeSequence.iteritems()]
+    persistences = [p for idx,(parent,p) in mergeSequence.items()]
     persistences = sorted(set(persistences))
     self.amsc.Persistence(persistences[-1])
 
@@ -510,7 +511,7 @@ class TopologyMapView(BaseTopologicalView):
     mergeSequence = self.amsc.GetMergeSequence()
     position = self.gView.mapFromGlobal(self.rightClickMenu.pos())
     mousePt = self.gView.mapToScene(position.x(),position.y()).x()
-    persistences = [p for idx,(parent,p) in mergeSequence.iteritems()]
+    persistences = [p for idx,(parent,p) in mergeSequence.items()]
     persistences = sorted(set(persistences))
     minP = 0
     maxP = max(persistences)
@@ -571,7 +572,7 @@ class TopologyMapView(BaseTopologicalView):
         the current setting.
     """
     mergeSequence = self.amsc.GetMergeSequence()
-    persistences = [p for idx,(parent,p) in mergeSequence.iteritems()]
+    persistences = [p for idx,(parent,p) in mergeSequence.items()]
     eps = max(persistences)*1e-6
     persistences = sorted(set(persistences))
     persistences.insert(0,0.)
@@ -588,7 +589,7 @@ class TopologyMapView(BaseTopologicalView):
         the current setting.
     """
     mergeSequence = self.amsc.GetMergeSequence()
-    persistences = [p for idx,(parent,p) in mergeSequence.iteritems()]
+    persistences = [p for idx,(parent,p) in mergeSequence.items()]
     eps = max(persistences)*1e-6
     persistences = sorted(set(persistences))
     persistences.insert(0,0.)
@@ -605,7 +606,7 @@ class TopologyMapView(BaseTopologicalView):
         structure.
     """
     selectedKeys = []
-    for key,graphic in self.polygonMap.iteritems():
+    for key,graphic in self.polygonMap.items():
       if graphic in self.scene.selectedItems():
         selectedKeys.append(key)
     self.amsc.SetSelection(selectedKeys)
@@ -641,7 +642,7 @@ class TopologyMapView(BaseTopologicalView):
     if fromChild:
       if event.buttons() == qtc.Qt.MiddleButton:
         colorMap = self.amsc.GetColors()
-        for extPair,graphic in self.polygonMap.iteritems():
+        for extPair,graphic in self.polygonMap.items():
           if graphic in self.scene.selectedItems():
             if isinstance(graphic,qtw.QGraphicsPathItem):
               minLabel = extPair[0]
@@ -685,7 +686,7 @@ class TopologyMapView(BaseTopologicalView):
     """
     persistence = self.amsc.Persistence()
     mergeSequence = self.amsc.GetMergeSequence()
-    persistences = [p for idx,(parent,p) in mergeSequence.iteritems()]
+    persistences = [p for idx,(parent,p) in mergeSequence.items()]
     persistences = sorted(set(persistences))
     persistences.insert(0,0.)
     persistences.pop()
@@ -776,7 +777,7 @@ class TopologyMapView(BaseTopologicalView):
     ## The minimum distances we will allow things to overlap
     epsX = effectiveWidth*1e-2
     epsY = effectiveHeight*1e-2
-    for extPair,items in partitions.iteritems():
+    for extPair,items in partitions.items():
       minLabel = extPair[0]
       maxLabel = extPair[1]
 
@@ -788,7 +789,7 @@ class TopologyMapView(BaseTopologicalView):
           self.extLocations[extIdx] = (xMin,yMin)
     ############################################################################
 
-    for extPair,items in partitions.iteritems():
+    for extPair,items in partitions.items():
       minLabel = extPair[0]
       maxLabel = extPair[1]
       ys = self.amsc.Y[np.array(items)]
@@ -818,7 +819,7 @@ class TopologyMapView(BaseTopologicalView):
       self.polygonMap[(minLabel,maxLabel)].setAcceptHoverEvents(True)
       self.polygonMap[(minLabel,maxLabel)].setFlag(qtw.QGraphicsItem.ItemClipsToShape)
 
-    for key,(parentIdx,persistence) in mergeSequence.iteritems():
+    for key,(parentIdx,persistence) in mergeSequence.items():
       if key in self.extLocations:
         x = self.extLocations[key][0]
         y = self.extLocations[key][1]
@@ -860,7 +861,7 @@ class TopologyMapView(BaseTopologicalView):
 
       count = 0
       startT = time.clock()
-      for extPair,items in partitions.iteritems():
+      for extPair,items in partitions.items():
         if key in extPair:
           count += len(items)
       # print('counting finished: (%f s)' % (time.clock()-startT))
