@@ -274,16 +274,3 @@ class TopologyWindow(qtg.QMainWindow):
     """
     self.closed.emit(self)
     return super(TopologyWindow,self).closeEvent(event)
-
-## We will not support external running of this UI, it shall be run from RAVEN
-# if __name__ == '__main__':
-#   app = qtg.QApplication(sys.argv)
-
-#   X = None
-#   Y = None
-#   if len(sys.argv) > 1:
-#     print('\tYou probably want me to load a file...')
-#     print('\tThe Maker has not included this in my programming.')
-#   main = TopologyWindow(X,Y)
-#   main.show()
-#   sys.exit(app.exec_())
