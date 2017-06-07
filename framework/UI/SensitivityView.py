@@ -312,6 +312,7 @@ class SensitivityView(BaseTopologicalView):
     maxExtent = plotWidth
 
     axisPen = qtg.QPen(qtc.Qt.black)
+    axisPen.setCosmetic(True)
     names = self.amsc.GetNames()[:-1]
 
     selection = self.amsc.GetSelectedSegments()
