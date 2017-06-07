@@ -94,7 +94,7 @@ class CustomPathItem(qtw.QGraphicsPathItem):
     self.graphics = []
     self.tipSize = qtc.QSize(0,0)
 
-    font = qtg.QFont('Courier New',2)
+    font = qtg.QFont('Courier New', 2, qtg.QFont.Light)
     fm = qtg.QFontMetrics(font)
     fontHeight = fm.height()
 
@@ -104,7 +104,10 @@ class CustomPathItem(qtw.QGraphicsPathItem):
     partition = data['amsc'].Partitions()[data['key']]
 
     padding = 1
-    self.tipSize = qtc.QSize(30,fontHeight*(len(dataNames)+1)+2*padding)
+    # self.tipSize = qtc.QSize(30,fontHeight*(len(dataNames)+1)+2*padding)
+    ## Since we have disabled a bunch of the time-consuming stuff below, we
+    ## should make this box smaller, so it doesn't waste space.
+    self.tipSize = qtc.QSize(30,fontHeight+2*padding)
     xPos = padding
     yPos = padding+2
 
@@ -114,6 +117,10 @@ class CustomPathItem(qtw.QGraphicsPathItem):
       gBox = scene.addPath(cBox)
     # gBox = self.scene().addPath(cBox)
       gBox.setVisible(False)
+      tempPen = qtg.QPen(qtg.QColor('#333333'))
+      tempPen.setCosmetic(True)
+      gBox.setPen(tempPen)
+
       self.graphics.append((cBox,gBox))
 
     # We can add more graphics to the tooltip by following this template,
@@ -128,7 +135,9 @@ class CustomPathItem(qtw.QGraphicsPathItem):
     # gText = self.scene().addPath(cKey)
     if scene is not None:
       gText = scene.addPath(cKey)
-      gText.setPen(qtg.QPen(qtg.QColor('#333333')))
+      tempPen = qtg.QPen(qtg.QColor('#333333'))
+      tempPen.setCosmetic(True)
+      gText.setPen(tempPen)
       gText.setBrush(qtg.QBrush(qtg.QColor('#333333')))
       gText.setVisible(False)
       self.graphics.append((cKey,gText))
@@ -136,111 +145,118 @@ class CustomPathItem(qtw.QGraphicsPathItem):
     yPos += fontHeight
     ##  End template
 
-    for i,name in enumerate(dataNames):
-      if i == len(dataNames)-1:
-        vals = data['amsc'].GetY(partition)
-        minVal = min(data['amsc'].GetY())
-        maxVal = max(data['amsc'].GetY())
-      else:
-        vals = data['amsc'].GetX(partition,i)
-        minVal = min(data['amsc'].GetX(None,i))
-        maxVal = max(data['amsc'].GetX(None,i))
+    ## Disable the sparklines, since they seem to take a long time to render.
+    # for i,name in enumerate(dataNames):
+    #   if i == len(dataNames)-1:
+    #     vals = data['amsc'].GetY(partition)
+    #     minVal = min(data['amsc'].GetY())
+    #     maxVal = max(data['amsc'].GetY())
+    #   else:
+    #     vals = data['amsc'].GetX(partition,i)
+    #     minVal = min(data['amsc'].GetX(None,i))
+    #     maxVal = max(data['amsc'].GetX(None,i))
 
-      if len(name) > 7:
-        label = name[:3] + u"\u2026" + name[-3:]
-      else:
-        label = name
-      ## Ensure everything is 7 characters wide
-      while len(label) < 7:
-        label = ' ' + label
-      label += ' '
-      cText = qtg.QPainterPath() # contextual pop-up text
-      cText.addText(qtc.QPointF(padding,yPos),font,label)
-      if scene is not None:
-        # gText = self.scene().addPath(cText)
-        gText = scene.addPath(cText)
-        gText.setPen(qtg.QPen(qtg.QColor('#333333')))
-        gText.setBrush(qtg.QBrush(qtg.QColor('#333333')))
-        gText.setVisible(False)
-        self.graphics.append((cText,gText))
+    #   if len(name) > 7:
+    #     label = name[:3] + u"\u2026" + name[-3:]
+    #   else:
+    #     label = name
+    #   ## Ensure everything is 7 characters wide
+    #   while len(label) < 7:
+    #     label = ' ' + label
+    #   label += ' '
+    #   cText = qtg.QPainterPath() # contextual pop-up text
+    #   cText.addText(qtc.QPointF(padding,yPos),font,label)
+    #   if scene is not None:
+    #     # gText = self.scene().addPath(cText)
+    #     gText = scene.addPath(cText)
+    #     tempPen = qtg.QPen(qtg.QColor('#333333'))
+    #     tempPen.setCosmetic(True)
+    #     gText.setPen(tempPen)
+    #     gText.setBrush(qtg.QBrush(qtg.QColor('#333333')))
+    #     gText.setVisible(False)
+    #     self.graphics.append((cText,gText))
 
-      xPos = padding + fm.width(label)
+    #   xPos = padding + fm.width(label)
 
-      boxX = xPos
-      boxY = yPos - 2
-      boxW = self.tipSize.width()-xPos-padding
-      boxH = fontHeight
+    #   boxX = xPos
+    #   boxY = yPos - 2
+    #   boxW = self.tipSize.width()-xPos-padding
+    #   boxH = fontHeight
 
-      cDimBox = qtg.QPainterPath() # contextual pop-up text
-      cDimBox.addRect(boxX,boxY,boxW,boxH)
-      if scene is not None:
-        # gDimBox = self.scene().addPath(cDimBox)
-        gDimBox = scene.addPath(cDimBox)
-        gDimBox.setPen(qtg.QPen(qtg.QColor('#333333')))
-        gDimBox.setBrush(qtg.QBrush(qtg.QColor('#FFFFFF')))
-        gDimBox.setVisible(False)
-        self.graphics.append((cDimBox,gDimBox))
+    #   cDimBox = qtg.QPainterPath() # contextual pop-up text
+    #   cDimBox.addRect(boxX,boxY,boxW,boxH)
+    #   if scene is not None:
+    #     # gDimBox = self.scene().addPath(cDimBox)
+    #     gDimBox = scene.addPath(cDimBox)
+    #     tempPen = qtg.QPen(qtg.QColor('#333333'))
+    #     tempPen.setCosmetic(True)
+    #     gDimBox.setPen(tempPen)
+    #     gDimBox.setBrush(qtg.QBrush(qtg.QColor('#FFFFFF')))
+    #     gDimBox.setVisible(False)
+    #     self.graphics.append((cDimBox,gDimBox))
 
-      cDimSpan = qtg.QPainterPath() # contextual pop-up text
-      x = (boxW)/(maxVal-minVal)*(min(vals)-minVal) + boxX
-      y = boxY
-      w = (boxW)/(maxVal-minVal)*(max(vals)-minVal) + boxX - x
-      h = boxH
-      cDimSpan.addRect(x,y,w,h)
-      if scene is not None:
-        # gDimSpan = self.scene().addPath(cDimSpan)
-        gDimSpan = scene.addPath(cDimSpan)
-        gDimSpan.setPen(qtg.QPen(qtg.QColor('#333333')))
-        gDimSpan.setBrush(qtg.QBrush(qtg.QColor('#CCCCCC')))
-        gDimSpan.setVisible(False)
-        self.graphics.append((cDimSpan,gDimSpan))
+    #   cDimSpan = qtg.QPainterPath() # contextual pop-up text
+    #   x = (boxW)/(maxVal-minVal)*(min(vals)-minVal) + boxX
+    #   y = boxY
+    #   w = (boxW)/(maxVal-minVal)*(max(vals)-minVal) + boxX - x
+    #   h = boxH
+    #   cDimSpan.addRect(x,y,w,h)
+    #   if scene is not None:
+    #     # gDimSpan = self.scene().addPath(cDimSpan)
+    #     gDimSpan = scene.addPath(cDimSpan)
+    #     tempPen = qtg.QPen(qtg.QColor('#333333'))
+    #     tempPen.setCosmetic(True)
+    #     gDimSpan.setPen(tempPen)
+    #     gDimSpan.setBrush(qtg.QBrush(qtg.QColor('#CCCCCC')))
+    #     gDimSpan.setVisible(False)
+    #     self.graphics.append((cDimSpan,gDimSpan))
 
-      ##########################################################################
-      ## Histogram Sparkline
+    #   ##########################################################################
+    #   ## Histogram Sparkline
 
-      if i == len(dataNames)-1:
-        cDimHist = qtg.QPainterPath() # contextual pop-up text
-        hist,binEdges = np.histogram(vals)
-        maxCount = max(hist)
-        for j,bin in enumerate(hist):
-          x = (boxW)/(maxVal-minVal)*(binEdges[j]-minVal) + boxX
-          w = (boxW)/(maxVal-minVal)*(binEdges[j+1]-minVal) + boxX - x
-          h = float(bin)/float(maxCount)*boxH
-          y = boxY+boxH - h
-          cDimHist.addRect(x,y,w,h)
-        if scene is not None:
-          # gDimHist = self.scene().addPath(cDimHist)
-          gDimHist = scene.addPath(cDimHist)
-          gDimHist.setPen(qtg.QPen(qtc.Qt.NoPen))#qtg.QPen(qtg.QColor('#CCCCCC')))
-          gDimHist.setBrush(qtg.QBrush(qtg.QColor('#333333')))
-          gDimHist.setVisible(False)
-          self.graphics.append((cDimHist,gDimHist))
+    #   if i == len(dataNames)-1:
+    #     cDimHist = qtg.QPainterPath() # contextual pop-up text
+    #     hist,binEdges = np.histogram(vals)
+    #     maxCount = max(hist)
+    #     for j,bin in enumerate(hist):
+    #       x = (boxW)/(maxVal-minVal)*(binEdges[j]-minVal) + boxX
+    #       w = (boxW)/(maxVal-minVal)*(binEdges[j+1]-minVal) + boxX - x
+    #       h = float(bin)/float(maxCount)*boxH
+    #       y = boxY+boxH - h
+    #       cDimHist.addRect(x,y,w,h)
+    #     if scene is not None:
+    #       # gDimHist = self.scene().addPath(cDimHist)
+    #       gDimHist = scene.addPath(cDimHist)
+    #       gDimHist.setPen(qtg.QPen(qtc.Qt.NoPen))#qtg.QPen(qtg.QColor('#CCCCCC')))
+    #       gDimHist.setBrush(qtg.QBrush(qtg.QColor('#333333')))
+    #       gDimHist.setVisible(False)
+    #       self.graphics.append((cDimHist,gDimHist))
 
-      ##########################################################################
-      ## Scatter Sparkline
-      else:
-        cDimScatter = qtg.QPainterPath() # contextual pop-up text
-        Xs = vals
-        Ys = data['amsc'].GetY(partition)
-        maxY = max(Ys)
-        minY = min(Ys)
-        for xVal,yVal in zip(Xs,Ys):
-          x = (boxW)/(maxVal-minVal)*(xVal-minVal) + boxX
-          y = boxY+boxH - boxH/(maxY-minY)*(yVal-minY)
-          w = .2
-          h = .2
-          cDimScatter.addRect(x,y,w,h)
-        if scene is not None:
-          # gDimScatter = self.scene().addPath(cDimScatter)
-          gDimScatter = scene.addPath(cDimScatter)
-          gDimScatter.setPen(qtg.QPen(qtc.Qt.NoPen))#qtg.QPen(qtg.QColor('#CCCCCC')))
-          gDimScatter.setBrush(qtg.QBrush(qtg.QColor('#333333')))
-          gDimScatter.setVisible(False)
-          self.graphics.append((cDimScatter,gDimScatter))
+    #   ##########################################################################
+    #   ## Scatter Sparkline
+    #   else:
+    #     cDimScatter = qtg.QPainterPath() # contextual pop-up text
+    #     Xs = vals
+    #     Ys = data['amsc'].GetY(partition)
+    #     maxY = max(Ys)
+    #     minY = min(Ys)
+    #     for xVal,yVal in zip(Xs,Ys):
+    #       x = (boxW)/(maxVal-minVal)*(xVal-minVal) + boxX
+    #       y = boxY+boxH - boxH/(maxY-minY)*(yVal-minY)
+    #       w = .2
+    #       h = .2
+    #       cDimScatter.addRect(x,y,w,h)
+    #     if scene is not None:
+    #       # gDimScatter = self.scene().addPath(cDimScatter)
+    #       gDimScatter = scene.addPath(cDimScatter)
+    #       gDimScatter.setPen(qtg.QPen(qtc.Qt.NoPen))#qtg.QPen(qtg.QColor('#CCCCCC')))
+    #       gDimScatter.setBrush(qtg.QBrush(qtg.QColor('#333333')))
+    #       gDimScatter.setVisible(False)
+    #       self.graphics.append((cDimScatter,gDimScatter))
 
-      ##########################################################################
+    #   ##########################################################################
 
-      yPos += fontHeight
+    #   yPos += fontHeight
 
 
     ## This stuff will be performed on all of the tooltip elements
@@ -259,7 +275,7 @@ class CustomPathItem(qtw.QGraphicsPathItem):
     """
     if self.isSelected():
       selectedOption = qtw.QStyleOptionGraphicsItem(option)
-      selectedOption.state &=  (not qtg.QStyle.State_Selected)
+      selectedOption.state &=  (not qtw.QStyle.State_Selected)
       originalPen = self.pen()
       selectedPen = qtg.QPen(originalPen)
       selectedPen.setDashPattern([2,1])
@@ -363,7 +379,7 @@ class CustomPathItem(qtw.QGraphicsPathItem):
 
     """
     if change == qtw.QGraphicsItem.ItemSceneHasChanged:
-      for graphic,path in zip(self.graphics,self.paths):
+      for path,graphic in self.graphics:
         if graphic not in self.scene().items():
           self.scene().addItem(graphic)
     return super(CustomPathItem,self).itemChange(change,value)
@@ -722,11 +738,24 @@ class TopologyMapView(BaseTopologicalView):
 
     width = self.scene.width()
     height = self.scene.height()
-    self.scene.addRect(0,0,width,height,qtg.QPen(qtc.Qt.black))
+    tempPen = qtg.QPen(qtc.Qt.black)
+    tempPen.setCosmetic(True)
+
+    self.scene.addRect(0,0,width,height,tempPen)
+
+    ## Profiling code
+    print('Get data from AMSC...', end='')
+    start = time.clock()
+    ## End Profiling code
 
     partitions = self.amsc.Partitions()
     mergeSequence = self.amsc.GetMergeSequence()
     colorMap = self.amsc.GetColors()
+
+    ## Profiling code
+    end = time.clock()
+    print('Done! ({} s)'.format(end-start))
+    ## End Profiling code
 
     #Set the points to have a diameter between 1-10% of the shortest dimension
     minDim = min([width,height])
@@ -777,8 +806,13 @@ class TopologyMapView(BaseTopologicalView):
     transparentGray = gray.lighter()
     transparentGray.setAlpha(127)
 
+    print('Get persistence...', end='')
+    start = time.clock()
     currentP = self.amsc.Persistence()
+    end = time.clock()
+    print('Done! ({} s)'.format(end-start))
     persPen = qtg.QPen(gray)
+    persPen.setCosmetic(True)
     persBrush = qtg.QBrush(transparentGray)
     (px,py) = scaleToScene(currentP,0)
     self.scene.addRect(px,0,width-px,height,persPen,persBrush)
@@ -787,6 +821,8 @@ class TopologyMapView(BaseTopologicalView):
     ## First place all of the extrema appropriately
     self.extLocations = {}
 
+    print('Place extrema...', end='')
+    start = time.clock()
     ## The minimum distances we will allow things to overlap
     epsX = effectiveWidth*1e-2
     epsY = effectiveHeight*1e-2
@@ -800,8 +836,12 @@ class TopologyMapView(BaseTopologicalView):
           yMin = self.amsc.Y[extIdx]
           (xMin,yMin) = scaleToScene(xMin,yMin)
           self.extLocations[extIdx] = (xMin,yMin)
+    end = time.clock()
+    print('Done! ({} s)'.format(end-start))
     ############################################################################
 
+    print('Draw paths...', end='')
+    start = time.clock()
     for extPair,items in partitions.items():
       minLabel = extPair[0]
       maxLabel = extPair[1]
@@ -831,7 +871,12 @@ class TopologyMapView(BaseTopologicalView):
       self.polygonMap[(minLabel,maxLabel)].setFlag(qtw.QGraphicsItem.ItemIsSelectable)
       self.polygonMap[(minLabel,maxLabel)].setAcceptHoverEvents(True)
       self.polygonMap[(minLabel,maxLabel)].setFlag(qtw.QGraphicsItem.ItemClipsToShape)
+      self.scene.addItem(self.polygonMap[(minLabel,maxLabel)])
+    end = time.clock()
+    print('Done! ({} s)'.format(end-start))
 
+    print('Draw endpoints...', end='')
+    start = time.clock()
     for key,(parentIdx,persistence) in mergeSequence.items():
       if key in self.extLocations:
         x = self.extLocations[key][0]
@@ -880,6 +925,7 @@ class TopologyMapView(BaseTopologicalView):
       # print('counting finished: (%f s)' % (time.clock()-startT))
 
       diameter = scaleDiameter(count)
+      pen.setCosmetic(True)
 
       if self.glyphGroup.checkedAction().text() == 'Triangle':
         triangle = qtg.QPolygonF()
@@ -903,9 +949,12 @@ class TopologyMapView(BaseTopologicalView):
                                                      diameter, pen, brush)
       if currentP <= persistence:
         self.polygonMap[key].setFlag(qtw.QGraphicsItem.ItemIsSelectable)
-        self.polygonMap[key].setZValue(1/diameter)
+        self.polygonMap[key].setZValue(1./diameter)
       self.polygonMap[key].setToolTip(str(key))
       self.polygonMap[key].setAcceptHoverEvents(True)
+
+    end = time.clock()
+    print('Done! ({} s)'.format(end-start))
     self.gView.scale(self.gView.width()/self.scene.width(),
                      self.gView.height()/self.scene.height())
     self.gView.fitInView(self.scene.sceneRect(),qtc.Qt.KeepAspectRatio)

@@ -20,7 +20,11 @@ if __name__ == '__main__':
 
   from UI import TopologyWindow
 
-  main = TopologyWindow(X,Y)
+  main = TopologyWindow(X,Y,debug=True)
   main.loadData()
   main.show()
+  main.addNewView('TopologyMapView')
+  main.addNewView('ScatterView2D')
+  main.addNewView('SensitivityView')
+  main.addNewView('FitnessView')
   sys.exit(app.exec_())

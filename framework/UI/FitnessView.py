@@ -184,14 +184,15 @@ class FitnessView(BaseTopologicalView):
     plotHeight = height - 2*self.padding
 
     axisPen = qtg.QPen(qtc.Qt.black)
+    axisPen.setCosmetic(True)
     names = self.amsc.GetNames()[:-1]
 
     if not self.amsc.FitsSynced():
       txtItem = self.scene.addSimpleText('Rebuild Local Models',self.font)
       txtItem.setFlag(qtw.QGraphicsItem.ItemIgnoresTransformations)
-      txtItem.setPos(0,0)
-      txtItem.setFlag(qtw.QGraphicsItem.ItemIsMovable)
-      txtItem.setFlag(qtw.QGraphicsItem.ItemIsSelectable)
+      txtItem.setPos(self.padding,self.padding)
+      # txtItem.setFlag(qtw.QGraphicsItem.ItemIsMovable)
+      # txtItem.setFlag(qtw.QGraphicsItem.ItemIsSelectable)
       self.scene.changed.connect(self.scene.invalidate)
       self.gView.fitInView(self.scene.sceneRect(),qtc.Qt.KeepAspectRatio)
       return
@@ -235,6 +236,7 @@ class FitnessView(BaseTopologicalView):
 
       myColor = colorMap[extPair]
       myPen = qtg.QPen(qtg.QColor('#000000'))
+      myPen.setCosmetic(True)
       brushColor = qtg.QColor(myColor)
       brushColor.setAlpha(127)
       myBrush = qtg.QBrush(brushColor)
@@ -242,7 +244,7 @@ class FitnessView(BaseTopologicalView):
       vals = rSquared
 
       w = axisWidth / dimCount
-      self.font.setPointSizeF(np.clip(w-2*self.padding,2,18))
+      self.font.setPointSizeF(np.clip(w-2*self.padding,2,6))
       for i,val in enumerate(vals):
         name = names[indexOrder[i]]
         if val > 0:
@@ -259,7 +261,8 @@ class FitnessView(BaseTopologicalView):
           fontWidth = fm.width(numTxtItem.text())
 
           numTxtItem.setPos(x+(w-fontHeight)/2.,y-plotHeight+fontWidth)
-          numTxtItem.rotate(285)
+          numTxtItem.setRotation(285)
+          # numTxtItem.setScale()
           numTxtItem.setFlag(qtw.QGraphicsItem.ItemIsMovable)
           numTxtItem.setFlag(qtw.QGraphicsItem.ItemIsSelectable)
           numTxtItem.setZValue(2)
@@ -268,12 +271,12 @@ class FitnessView(BaseTopologicalView):
         myRect.setToolTip(str(val))
         myRect.setAcceptHoverEvents(True)
 
-        txtItem = self.scene.addSimpleText(' ' + name,self.font)
+        txtItem = self.scene.addSimpleText(' ' + name, self.font)
         fm = qtg.QFontMetrics(txtItem.font())
         fontHeight = fm.height()
         fontWidth = fm.width(name)
         txtItem.setPos(x+(w-fontHeight)/2.,y)
-        txtItem.rotate(270)
+        txtItem.setRotation(270)
         txtItem.setFlag(qtw.QGraphicsItem.ItemIsMovable)
         txtItem.setFlag(qtw.QGraphicsItem.ItemIsSelectable)
         txtItem.setZValue(2)

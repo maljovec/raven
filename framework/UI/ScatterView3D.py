@@ -81,7 +81,8 @@ class ScatterView3D(BaseTopologicalView):
     self.mplCanvas = FigureCanvas(self.fig)
     self.mplCanvas.axes = self.fig.add_subplot(111, projection='3d')
     # We want the axes cleared every time plot() is called
-    self.mplCanvas.axes.hold(False)
+    # self.mplCanvas.axes.hold(False)
+    self.mplCanvas.axes.clear()
     self.colorbar = None
 
     mySplitter.addWidget(self.mplCanvas)
@@ -108,6 +109,8 @@ class ScatterView3D(BaseTopologicalView):
 
     self.chkEdges = qtw.QCheckBox('Show Edges')
     self.chkEdges.setChecked(False)
+    ## Disable this as it can be expensive
+    self.chkEdges.setVisible(False)
     self.chkEdges.stateChanged.connect(self.updateScene)
     subLayout.addWidget(self.chkEdges,row,col)
     row += 1
@@ -195,8 +198,8 @@ class ScatterView3D(BaseTopologicalView):
   def updateScene(self):
     """ A method for drawing the scene of this view.
     """
-    fontSize=24
-    smallFontSize=20
+    fontSize=16
+    smallFontSize=12
     rows = self.amsc.GetSelectedIndices()
     names = self.amsc.GetNames()
     self.mplCanvas.axes.clear()
@@ -271,7 +274,7 @@ class ScatterView3D(BaseTopologicalView):
       elif cmb.currentText() == 'Segment':
         colorMap = self.amsc.GetColors()
         partitions = self.amsc.Partitions()
-        allValues[key] = np.zeros(self.amsc.GetSampleSize(),dtype='|S7')
+        allValues[key] = np.zeros(self.amsc.GetSampleSize(),dtype='|U7')
         for extPair,items in partitions.items():
           for item in items:
             allValues[key][item] = colorMap[extPair]
@@ -281,7 +284,7 @@ class ScatterView3D(BaseTopologicalView):
       elif cmb.currentText() == 'Maximum Flow':
         colorMap = self.amsc.GetColors()
         partitions = self.amsc.Partitions()
-        allValues[key] = np.zeros(self.amsc.GetSampleSize(),dtype='|S7')
+        allValues[key] = np.zeros(self.amsc.GetSampleSize(),dtype='|U7')
         for extPair,items in partitions.items():
           for item in items:
             allValues[key][item] = colorMap[extPair[1]]
@@ -291,7 +294,7 @@ class ScatterView3D(BaseTopologicalView):
       elif cmb.currentText() == 'Minimum Flow':
         colorMap = self.amsc.GetColors()
         partitions = self.amsc.Partitions()
-        allValues[key] = np.zeros(self.amsc.GetSampleSize(),dtype='|S7')
+        allValues[key] = np.zeros(self.amsc.GetSampleSize(),dtype='|U7')
         for extPair,items in partitions.items():
           for item in items:
             allValues[key][item] = colorMap[extPair[0]]
@@ -346,7 +349,7 @@ class ScatterView3D(BaseTopologicalView):
 
       lc = mpl_toolkits.mplot3d.art3d.Line3DCollection(lines,colors=lineColors,linewidths=1)
       self.mplCanvas.axes.add_collection(lc)
-      self.mplCanvas.axes.hold(True)
+      # self.mplCanvas.axes.hold(True)
 
     if self.cmbVars['Color'].currentText() not in specialColorKeywords:
       myPlot = self.mplCanvas.axes.scatter(values['X'], values['Y'],
@@ -367,7 +370,7 @@ class ScatterView3D(BaseTopologicalView):
       self.colorbar.set_label(self.cmbVars['Color'].currentText(),size=fontSize,labelpad=10)
       self.colorbar.set_ticks(np.linspace(mins['Color'],maxs['Color'],5))
       self.colorbar.ax.tick_params(labelsize=smallFontSize)
-      self.mplCanvas.axes.hold(True)
+      # self.mplCanvas.axes.hold(True)
       if self.chkExts.checkState() == qtc.Qt.PartiallyChecked:
         maxValues['Color'] = colors.maxBrushColor.name()
         minValues['Color'] = colors.minBrushColor.name()
@@ -392,7 +395,7 @@ class ScatterView3D(BaseTopologicalView):
                                            values['Z'], c=values['Color'],
                                            edgecolors='none')
 
-      self.mplCanvas.axes.hold(True)
+      # self.mplCanvas.axes.hold(True)
       if self.chkExts.checkState() == qtc.Qt.PartiallyChecked:
         maxValues['Color'] = colors.maxBrushColor.name()
         minValues['Color'] = colors.minBrushColor.name()
@@ -435,7 +438,7 @@ class ScatterView3D(BaseTopologicalView):
     for label in  (self.mplCanvas.axes.get_xticklabels()+self.mplCanvas.axes.get_yticklabels()+self.mplCanvas.axes.get_zticklabels()):
       label.set_fontsize(smallFontSize)
 
-    self.mplCanvas.axes.hold(False)
+    # self.mplCanvas.axes.hold(False)
     self.mplCanvas.draw()
 
   def test(self):

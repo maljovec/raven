@@ -81,9 +81,10 @@ class DataInterpreterDialog(QDialog):
     layout.addWidget(QLabel('k:'),row,col)
     col += 1
     self.kSpnBox = QSpinBox()
-    self.kSpnBox.setValue(len(self.data)-1)
     self.kSpnBox.setMinimum(2)
     self.kSpnBox.setMaximum(len(self.data)-1)
+    # self.kSpnBox.setValue(len(self.data)-1)
+    self.kSpnBox.setValue(50)
     layout.addWidget(self.kSpnBox,row,col)
 
     row += 1
@@ -106,7 +107,7 @@ class DataInterpreterDialog(QDialog):
     buttons.rejected.connect(self.reject)
     self.setLayout(layout)
 
-    self.graphCmbBox.setCurrentIndex(1)
+    self.graphCmbBox.setCurrentIndex(2)
     self.outputCmbBox.setCurrentIndex(self.outputCmbBox.count()-1)
     # self.weightsChkBox.setChecked(True)
     # self.weightsChkBox.setChecked(False)
@@ -118,7 +119,6 @@ class DataInterpreterDialog(QDialog):
   #   self.weightsCmbBox.setEnabled(self.weightsChkBox.isChecked())
 
   def accept(self):
-    print('Here')
     self.inputColumns = []
     for i,item in enumerate(self.inputChks):
       if item.isChecked():

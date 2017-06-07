@@ -226,6 +226,7 @@ class SensitivityView(BaseTopologicalView):
     radius = minDim/2.
 
     axisPen = qtg.QPen(qtc.Qt.black)
+    axisPen.setCosmetic(True)
 
     self.scene.addEllipse(centerX - radius, centerY - radius, minDim, \
                           minDim, axisPen)
@@ -280,6 +281,7 @@ class SensitivityView(BaseTopologicalView):
     for extPair in selection:
       myColor = colorMap[extPair]
       myPen = qtg.QPen(qtg.QColor('#000000'))
+      myPen.setCosmetic(True)
       brushColor = qtg.QColor(myColor)
       brushColor.setAlpha(127)
       myBrush = qtg.QBrush(brushColor)
@@ -350,6 +352,7 @@ class SensitivityView(BaseTopologicalView):
       for j,extPair in enumerate(selection):
         myColor = colorMap[extPair]
         myPen = qtg.QPen(qtg.QColor('#000000'))
+        myPen.setCosmetic(True)
         brushColor = qtg.QColor(myColor)
         brushColor.setAlpha(127)
         myBrush = qtg.QBrush(brushColor)
@@ -403,10 +406,11 @@ class SensitivityView(BaseTopologicalView):
         axisWidth = plotWidth/float(len(selection))
       dimCount = len(names)
 
-      self.font.setPointSizeF(np.clip(axisHeight/float(dimCount)-2*self.padding,2,18))
+      self.font.setPointSizeF(np.clip(axisHeight/float(dimCount)-2*self.padding,2,6))
       for j,extPair in enumerate(selection):
         myColor = colorMap[extPair]
         myPen = qtg.QPen(qtg.QColor('#000000'))
+        myPen.setCosmetic(True)
         brushColor = qtg.QColor(myColor)
         brushColor.setAlpha(127)
         myBrush = qtg.QBrush(brushColor)

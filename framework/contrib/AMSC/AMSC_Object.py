@@ -1001,14 +1001,14 @@ class AMSC_Object(object):
         @ In, an integer specifying the query point
         @ Out, a integer list of neighbors indices
     """
-    return self.__amsc.Neighbors(idx)
+    return self.__amsc.Neighbors(int(idx))
 
 
 try:
   import qtpy.QtCore as qtc
 
   TolColors = ['#88CCEE', '#DDCC77', '#AA4499', '#117733', '#332288', '#999933',
-             '#44AA99', '#882255', '#CC6677']
+               '#44AA99', '#882255', '#CC6677']
 
   class QAMSC_Object(AMSC_Object,qtc.QObject):
     ## Paul Tol's colorblind safe colors
