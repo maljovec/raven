@@ -744,7 +744,7 @@ class TopologyMapView(BaseTopologicalView):
     self.scene.addRect(0,0,width,height,tempPen)
 
     ## Profiling code
-    print('Get data from AMSC...', end='')
+    print('Get data from AMSC...', end='', flush=True)
     start = time.clock()
     ## End Profiling code
 
@@ -806,7 +806,7 @@ class TopologyMapView(BaseTopologicalView):
     transparentGray = gray.lighter()
     transparentGray.setAlpha(127)
 
-    print('Get persistence...', end='')
+    print('Get persistence...', end='', flush=True)
     start = time.clock()
     currentP = self.amsc.Persistence()
     end = time.clock()
@@ -821,7 +821,7 @@ class TopologyMapView(BaseTopologicalView):
     ## First place all of the extrema appropriately
     self.extLocations = {}
 
-    print('Place extrema...', end='')
+    print('Place extrema...', end='', flush=True)
     start = time.clock()
     ## The minimum distances we will allow things to overlap
     epsX = effectiveWidth*1e-2
@@ -840,7 +840,7 @@ class TopologyMapView(BaseTopologicalView):
     print('Done! ({} s)'.format(end-start))
     ############################################################################
 
-    print('Draw paths...', end='')
+    print('Draw paths...', end='', flush=True)
     start = time.clock()
     for extPair,items in partitions.items():
       minLabel = extPair[0]
@@ -875,7 +875,7 @@ class TopologyMapView(BaseTopologicalView):
     end = time.clock()
     print('Done! ({} s)'.format(end-start))
 
-    print('Draw endpoints...', end='')
+    print('Draw endpoints...', end='', flush=True)
     start = time.clock()
     for key,(parentIdx,persistence) in mergeSequence.items():
       if key in self.extLocations:
