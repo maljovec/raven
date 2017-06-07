@@ -730,7 +730,7 @@ void AMSC<T>::ComputeMaximaPersistence(boost::numeric::ublas::matrix<int>
     p.first = followChain(p.first,merge);
     p.second = followChain(p.second,merge);
 
-    if( y(p.first) > y(p.second) )
+    if( y(p.first) > y(p.second) || (y(p.first) == y(p.second) && p.first > p.second))
       std::swap(p.second, p.first);
 
     //remove current merge pair from list
@@ -1008,7 +1008,7 @@ void AMSC<T>::ComputeMinimaPersistence(boost::numeric::ublas::matrix<int>
     p.first = followChain(p.first, merge);
     p.second = followChain(p.second, merge);
 
-    if( y(p.first) < y(p.second) )
+    if( y(p.first) < y(p.second) || (y(p.first) == y(p.second) && p.first < p.second))
       std::swap(p.second, p.first);
 
     //remove current merge pair from list
