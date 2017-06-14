@@ -36,6 +36,8 @@ from .SensitivityView import SensitivityView
 from .FitnessView import FitnessView
 from .ScatterView2D import ScatterView2D
 from .ScatterView3D import ScatterView3D
+from .BarcodeView import BarcodeView
+from .ProjectionView import ProjectionView
 from .DataInterpreterDialog import DataInterpreterDialog
 
 import time
