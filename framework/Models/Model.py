@@ -55,7 +55,7 @@ class Model(utils.metaclass_insert(abc.ABCMeta,BaseType),Assembler):
     ## Begin alias tag
     AliasInput = InputData.parameterInputFactory("alias", contentType=InputData.StringType)
     AliasInput.addParam("variable", InputData.StringType, True)
-    AliasTypeInput = InputData.makeEnumType("aliasType","aliasTypeType",["input","output"])
+    AliasTypeInput = InputData.makeEnumType("aliasType",["input","output"])
     AliasInput.addParam("type", AliasTypeInput, True)
     inputSpecification.addSub(AliasInput)
     ## End alias tag

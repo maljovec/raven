@@ -48,7 +48,25 @@ class RavenOutput(PostProcessor):
     ## This will replace the lines above
     inputSpecification = super(RavenOutput, cls).getInputSpecification()
 
+    ## Now build the whole xml block from the sub-blocks
+    blocks = []
+    ## In reality the content for this node will be ignored, only its presence
+    ## is important
+    blocks.append(InputData.parameterInputFactory("dynamic", contentType=InputData.StringType))
+
+    ## For this node, again the content (what is between (excluding sub-nodes):
+    ## <File></File>) does not matter, only its sub-nodes are used.
+    blocks.append(InputData.parameterInputFactory("File", contentType=InputData.StringType))
+    blocks[-1].addParam("name", InputData.StringType)
+    blocks[-1].addParam("ID", InputData.IntegerType)
+    outputNode = InputData.parameterInputFactory("output", contentType=InputData.StringType)
+    outputNode.addParam("name", InputData.StringType)
+    blocks[-1].addSub(outputNode)
+
     ## TODO: Fill this in with the appropriate tags
+
+    for block in blocks:
+      inputSpecification.addSub(block)
 
     return inputSpecification
 

@@ -51,8 +51,8 @@ class ROM(Dummy):
     """
     inputSpecification = super(ROM, cls).getInputSpecification()
 
-    IndexSetInputType = InputData.makeEnumType("indexSet","indexSetType",["TensorProduct","TotalDegree","HyperbolicCross","Custom"])
-    CriterionInputType = InputData.makeEnumType("criterion", "criterionType", ["bic","aic","gini","entropy","mse"])
+    IndexSetInputType = InputData.makeEnumType("indexSet",["TensorProduct","TotalDegree","HyperbolicCross","Custom"])
+    CriterionInputType = InputData.makeEnumType("criterion", ["bic","aic","gini","entropy","mse"])
 
     InterpolationInput = InputData.parameterInputFactory('Interpolation', contentType=InputData.StringType)
     InterpolationInput.addParam("quad", InputData.StringType, False)

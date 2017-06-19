@@ -60,7 +60,7 @@ class Code(Model):
     ## Begin command line arguments tag
     ClargsInput = InputData.parameterInputFactory("clargs")
 
-    ClargsTypeInput = InputData.makeEnumType("clargsType","clargsTypeType",["text","input","output","prepend","postpend"])
+    ClargsTypeInput = InputData.makeEnumType("clargsType",["text","input","output","prepend","postpend"])
     ClargsInput.addParam("type", ClargsTypeInput, True)
 
     ClargsInput.addParam("arg", InputData.StringType, False)
@@ -71,7 +71,7 @@ class Code(Model):
     ## Begin file arguments tag
     FileargsInput = InputData.parameterInputFactory("fileargs")
 
-    FileargsTypeInput = InputData.makeEnumType("fileargsType", "fileargsTypeType",["input","output","moosevpp"])
+    FileargsTypeInput = InputData.makeEnumType("fileargsType", ["input","output","moosevpp"])
     FileargsInput.addParam("type", FileargsTypeInput, True)
 
     FileargsInput.addParam("arg", InputData.StringType, False)

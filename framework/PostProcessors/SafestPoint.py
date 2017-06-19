@@ -47,29 +47,44 @@ class SafestPoint(PostProcessor):
       @ Out, inputSpecification, InputData.ParameterInput, class to use for
         specifying input of cls.
     """
-    ## This will replace the lines above
     inputSpecification = super(SafestPoint, cls).getInputSpecification()
 
-    OuterDistributionInput = InputData.parameterInputFactory("Distribution", contentType=InputData.StringType)
-    OuterDistributionInput.addParam("class", InputData.StringType)
-    OuterDistributionInput.addParam("type", InputData.StringType)
-    inputSpecification.addSub(OuterDistributionInput)
 
+    ## Non-standard datatypes
+    SPGridType = InputData.makeEnumType("grid",["cdf","value"])
+
+    ## Now build the whole xml block from the sub-blocks
+    blocks = []
+
+    blocks.append(InputData.parameterInputFactory("Distribution", contentType=InputData.StringType))
+    blocks[-1].addParam("class", InputData.StringType)
+    blocks[-1].addParam("type", InputData.StringType)
+
+    ## This is all part of one sub-block:
     VariableInput = InputData.parameterInputFactory("variable")
     VariableInput.addParam("name", InputData.StringType)
+
+    ## Should be restricted by the Distribution names in this input file
+    ## We cannot specify this information here
     InnerDistributionInput = InputData.parameterInputFactory("distribution", contentType=InputData.StringType)
     VariableInput.addSub(InnerDistributionInput)
     InnerGridInput = InputData.parameterInputFactory("grid", contentType=InputData.FloatType)
-    InnerGridInput.addParam("type", InputData.StringType)
+    InnerGridInput.addParam("type", SPGridType)
     InnerGridInput.addParam("steps", InputData.IntegerType)
     VariableInput.addSub(InnerGridInput)
-    ControllableInput = InputData.parameterInputFactory("controllable", contentType=InputData.StringType)
-    ControllableInput.addSub(VariableInput)
-    inputSpecification.addSub(ControllableInput)
 
-    NoncontrollableInput = InputData.parameterInputFactory("non-controllable", contentType=InputData.StringType)
-    NoncontrollableInput.addSub(VariableInput)
-    inputSpecification.addSub(NoncontrollableInput)
+    ## Should be restricted by the columns of the DataObject this is operating on
+    ## We cannot specify this information here
+    blocks.append(InputData.parameterInputFactory("controllable", contentType=InputData.StringType))
+    blocks[-1].addSub(VariableInput)
+
+    ## Should be restricted by the columns of the DataObject this is operating on
+    ## We cannot specify this information here
+    blocks.append(InputData.parameterInputFactory("non-controllable", contentType=InputData.StringType))
+    blocks[-1].addSub(VariableInput)
+
+    for block in blocks:
+      inputSpecification.addSub(block)
 
     return inputSpecification
 

@@ -49,7 +49,7 @@ class ComparisonStatistics(PostProcessor):
         specifying input of cls.
     """
     inputSpecification = super(ComparisonStatistics, cls).getInputSpecification()
-    KindInputEnumType = InputData.makeEnumType("kind","kindType",["uniformBins","equalProbability"])
+    KindInputEnumType = InputData.makeEnumType("kind",["uniformBins","equalProbability"])
     KindInput = InputData.parameterInputFactory("kind", contentType=KindInputEnumType)
     KindInput.addParam("numBins",InputData.IntegerType, False)
     KindInput.addParam("binMethod", InputData.StringType, False)
@@ -72,7 +72,7 @@ class ComparisonStatistics(PostProcessor):
     FZInput = InputData.parameterInputFactory("fz", contentType=InputData.StringType) #bool
     inputSpecification.addSub(FZInput)
 
-    CSInterpolationEnumType = InputData.makeEnumType("csinterpolation","csinterpolationType",["linear","quadratic"])
+    CSInterpolationEnumType = InputData.makeEnumType("csinterpolation",["linear","quadratic"])
     CSInterpolationInput = InputData.parameterInputFactory("interpolation",contentType=CSInterpolationEnumType)
     inputSpecification.addSub(CSInterpolationInput)
 

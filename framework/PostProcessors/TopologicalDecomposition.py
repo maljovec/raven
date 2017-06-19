@@ -29,6 +29,7 @@ import time
 from .PostProcessor import PostProcessor
 from utils import InputData
 import Files
+from ClassProperty import ClassProperty
 #Internal Modules End-----------------------------------------------------------
 
 class TopologicalDecomposition(PostProcessor):
@@ -37,6 +38,51 @@ class TopologicalDecomposition(PostProcessor):
     Morse-Smale decomposition from an input point cloud consisting of an
     arbitrary number of input parameters and a response value per input point
   """
+
+  _acceptedGradientParam = ['steepest', 'maxflow']
+  _acceptedGraphParam = ['approximate knn', 'delaunay', 'beta skeleton', 'relaxed beta skeleton']
+  _acceptedNormalizationParam = ['feature', 'zscore', 'none']
+  _acceptedPersistenceParam = ['difference','probability','count']#,'area']
+
+  @ClassProperty
+  def acceptedGradientParam(cls):
+    """
+        A class level constant that tells developers how gradients can be
+        estimated for this class
+        @ In, cls, the TopologicalDecomposition class of which this object will
+          be a type
+    """
+    return cls._acceptedGradientParam
+
+  @ClassProperty
+  def acceptedGraphParam(cls):
+    """
+        A class level constant that tells developers what graph types can be
+        used for this class
+        @ In, cls, the TopologicalDecomposition class of which this object will
+          be a type
+    """
+    return cls._acceptedGraphParam
+
+  @ClassProperty
+  def acceptedNormalizationParam(cls):
+    """
+        A class level constant that tells developers what types of normalization
+        are available
+        @ In, cls, the TopologicalDecomposition class of which this object will
+          be a type
+    """
+    return cls._acceptedNormalizationParam
+
+  @ClassProperty
+  def acceptedPersistenceParam(cls):
+    """
+        A class level constant that tells developers what graph types can be
+        used for this class
+        @ In, cls, the TopologicalDecomposition class of which this object will
+          be a type
+    """
+    return cls._acceptedPersistenceParam
 
   @classmethod
   def getInputSpecification(cls):
@@ -50,35 +96,34 @@ class TopologicalDecomposition(PostProcessor):
     ## This will replace the lines above
     inputSpecification = super(TopologicalDecomposition, cls).getInputSpecification()
 
-    TDGraphInput = InputData.parameterInputFactory("graph", contentType=InputData.StringType)
-    inputSpecification.addSub(TDGraphInput)
+    ## Non-standard datatypes
+    TDGraphInputType = InputData.makeEnumType("graph",cls.acceptedGraphParam)
+    TDGradientInputType = InputData.makeEnumType("gradient",cls.acceptedGradientParam)
+    TDNormalizationInputType = InputData.makeEnumType("normalization",cls.acceptedNormalizationParam)
+    TDPersistenceInputType = InputData.makeEnumType("persistence",cls.acceptedPersistenceParam)
 
-    TDGradientInput = InputData.parameterInputFactory("gradient", contentType=InputData.StringType)
-    inputSpecification.addSub(TDGradientInput)
+    TDBetaType = InputData.makeFloatType("beta", 0, 2, minInclusive=False, maxInclusive=True)
+    TDSimplificationType = InputData.makeFloatType("simplification", 0, minInclusive=False)
 
-    TDBetaInput = InputData.parameterInputFactory("beta", contentType=InputData.FloatType)
-    inputSpecification.addSub(TDBetaInput)
+    ## Now build the whole xml block from the sub-blocks
+    blocks = []
+    blocks.append(InputData.parameterInputFactory("graph", contentType=TDGraphInputType))
+    blocks.append(InputData.parameterInputFactory("gradient", contentType=TDGradientInputType))
+    blocks.append(InputData.parameterInputFactory("beta", contentType=TDBetaType))
+    blocks.append(InputData.parameterInputFactory("knn", contentType=InputData.IntegerType))
+    blocks.append(InputData.parameterInputFactory("weighted", contentType=InputData.BoolType))
+    blocks.append(InputData.parameterInputFactory("persistence", contentType=TDPersistenceInputType))
+    blocks.append(InputData.parameterInputFactory("simplification", contentType=TDSimplificationType))
+    blocks.append(InputData.parameterInputFactory("normalization", contentType=TDNormalizationInputType))
+    ## Should be restricted by the columns of the DataObject this is operating on
+    ## We cannot specify this information here
+    blocks.append(InputData.parameterInputFactory("parameters", contentType=InputData.StringType))
+    ## Should be restricted by the columns of the DataObject this is operating on
+    ## We cannot specify this information here
+    blocks.append(InputData.parameterInputFactory("response", contentType=InputData.StringType))
 
-    TDKNNInput = InputData.parameterInputFactory("knn", contentType=InputData.IntegerType)
-    inputSpecification.addSub(TDKNNInput)
-
-    TDWeightedInput = InputData.parameterInputFactory("weighted", contentType=InputData.StringType) #bool
-    inputSpecification.addSub(TDWeightedInput)
-
-    TDPersistenceInput = InputData.parameterInputFactory("persistence", contentType=InputData.StringType)
-    inputSpecification.addSub(TDPersistenceInput)
-
-    TDSimplificationInput = InputData.parameterInputFactory("simplification", contentType=InputData.FloatType)
-    inputSpecification.addSub(TDSimplificationInput)
-
-    TDParametersInput = InputData.parameterInputFactory("parameters", contentType=InputData.StringType)
-    inputSpecification.addSub(TDParametersInput)
-
-    TDResponseInput = InputData.parameterInputFactory("response", contentType=InputData.StringType)
-    inputSpecification.addSub(TDResponseInput)
-
-    TDNormalizationInput = InputData.parameterInputFactory("normalization", contentType=InputData.StringType)
-    inputSpecification.addSub(TDNormalizationInput)
+    for block in blocks:
+      inputSpecification.addSub(block)
 
     return inputSpecification
 
@@ -89,11 +134,6 @@ class TopologicalDecomposition(PostProcessor):
       @ Out, None
     """
     PostProcessor.__init__(self, messageHandler)
-    self.acceptedGraphParam = ['approximate knn', 'delaunay', 'beta skeleton', \
-                               'relaxed beta skeleton']
-    self.acceptedPersistenceParam = ['difference','probability','count']#,'area']
-    self.acceptedGradientParam = ['steepest', 'maxflow']
-    self.acceptedNormalizationParam = ['feature', 'zscore', 'none']
 
     # Some default arguments
     self.gradient = 'steepest'

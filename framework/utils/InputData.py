@@ -121,6 +121,71 @@ class FloatType(InputType):
 
 FloatType.createClass("float","xsd:double")
 
+class RestrictedNumberBaseType(InputType):
+  """
+    A type for bounded integers or floating point values
+  """
+  minValue = None
+  maxValue = None
+
+  @classmethod
+  def createClass(cls, name, xsdNumber, minValue=None, maxValue=None, minInclusive=True, maxInclusive=True):
+    """
+      creates a new restricted number type.
+      @ In, name, string, the name of the type
+      @ In, xsdNumber, string, the type of number xsd should encode,
+        either xsd:integer or xsd:float.
+      @ In, minValue, int or float, a lower bound value, if None,
+        then this type will not have a lower bound.
+      @ In, maxValue, int or float, an upper bound value, if None,
+        then this type will not have an upper bound.
+      @ In, minInclusive, boolean, specifies whether the bound on minValue is
+        inclusive. Only used if minValue is not None.
+      @ In, maxInclusive, boolean, specifies whether the bound on maxValue is
+        inclusive. Only used if maxValue is not None.
+      @ Out, None
+    """
+
+    ## Rename the class to something understandable by a developer
+    cls.__name__ = str(name+'Spec')
+
+    cls.name = name
+
+    ## The name of this is only used internally for generating the xsd and since
+    ## it is creating a custom type there is no restriction on how this should
+    ## look. So, let's hide it from the user's of this API and give it a
+    ## standard name by just adding the word Type to the end.
+    cls.xmlType = str(name+'Type')
+    cls.needGenerating = True
+    cls.minValue = minValue
+    cls.maxValue = maxValue
+    cls.minInclusive = minInclusive
+    cls.maxInclusive = maxInclusive
+
+  @classmethod
+  def generateXML(cls, xsdNode):
+    """
+      Generates the xml data.
+      @ In, xsdNode, xml.etree.ElementTree.Element, the element to add the new xml type to.
+      @ Out, None
+    """
+    simpleType = ET.SubElement(xsdNode, 'xsd:simpleType')
+    simpleType.set('name', cls.getXMLType())
+    restriction = ET.SubElement(simpleType, 'xsd:restriction')
+    restriction.set('base',cls.getXMLType())
+    if cls.minValue is not None:
+      if cls.minInclusive:
+        minNode = ET.SubElement(restriction, 'xsd:minInclusive')
+      else:
+        minNode = ET.SubElement(restriction, 'xsd:minExclusive')
+      minNode.set('value',cls.minValue)
+    if cls.maxValue is not None:
+      if cls.maxInclusive:
+        maxNode = ET.SubElement(restriction, 'xsd:maxInclusive')
+      else:
+        maxNode = ET.SubElement(restriction, 'xsd:maxExclusive')
+      maxNode.set('value',cls.maxValue)
+
 class EnumBaseType(InputType):
   """
     A type that allows a set list of strings
@@ -128,11 +193,10 @@ class EnumBaseType(InputType):
   enumList = []
 
   @classmethod
-  def createClass(cls, name, xmlType, enumList):
+  def createClass(cls, name, enumList):
     """
       creates a new enumeration type.
       @ In, name, string, the name of the type
-      @ In, xmlType, string, the name used for the xml type.
       @ In, enumList, [string], a list of allowable strings.
       @ Out, None
     """
@@ -141,7 +205,11 @@ class EnumBaseType(InputType):
     cls.__name__ = str(name+'Spec')
 
     cls.name = name
-    cls.xmlType = xmlType
+    ## The name of this is only used internally for generating the xsd and since
+    ## it is creating a custom type there is no restriction on how this should
+    ## look. So, let's hide it from the user's of this API and give it a
+    ## standard name by just adding the word Type to the end.
+    cls.xmlType = str(name+'Type')
     cls.needGenerating = True
     cls.enumList = enumList
 
@@ -166,7 +234,7 @@ class BoolType(EnumBaseType):
   """
   pass
 
-BoolType.createClass("bool","boolType",["True","False"])
+BoolType.createClass("bool",["True","False"])
 
 class Quantity:
   """
@@ -177,7 +245,6 @@ class Quantity:
   zero_to_infinity = (0,2)
   one = (1,1)
   one_to_infinity = (1,2)
-
 
 class ParameterInput(object):
   """
@@ -384,11 +451,6 @@ class ParameterInput(object):
       if parameterData["required"]:
         attributeNode.set('use','required')
 
-## TODO: We should normalize the names of the following two functions, since they
-## do the same thing just on different input types.
-## e.g., parameterInputFactory and EnumFactory
-## makeClassSpecification and makeEnumSpecification
-
 def parameterInputFactory(*paramList, **paramDict):
   """
     Creates a new ParameterInput class with the same parameters as ParameterInput.createClass
@@ -402,11 +464,10 @@ def parameterInputFactory(*paramList, **paramDict):
   newClass.createClass(*paramList, **paramDict)
   return newClass
 
-def makeEnumType(name, xmlName, enumList):
+def makeEnumType(name, enumList):
   """
     Creates a new enum type that can be used as a content type.
     @ In, name, string, Name of the type
-    @ In, xmlName, string, Name of the type used in the XSD file.
     @ In, enumList, list of strings, the possible values of the enumeration.
     @ Out, newEnum, InputData.EnumBaseType, the new enumeration type.
   """
@@ -415,8 +476,54 @@ def makeEnumType(name, xmlName, enumList):
       the new enum to be created by the factory
     """
 
-  newEnum.createClass(name, xmlName, enumList)
+  newEnum.createClass(name, enumList)
   return newEnum
+
+def makeFloatType(name, minValue=None, maxValue=None, minInclusive=True, maxInclusive=True):
+  """
+    Creates a new float type that can be used as a content type with optional
+    restricted values.
+    @ In, name, string, Name of the type
+    @ In, minValue, float, a lower bound value, if None,
+      then this type will not have a lower bound.
+    @ In, maxValue, float, an upper bound value, if None,
+      then this type will not have an upper bound.
+    @ In, minInclusive, boolean, specifies whether the bound on minValue is
+      inclusive. Only used if minValue is not None.
+    @ In, maxInclusive, boolean, specifies whether the bound on maxValue is
+      inclusive. Only used if maxValue is not None.
+    @ Out, newNumber, InputData.RestrictedNumberBaseType, the new restricted number type.
+  """
+  class newNumber(RestrictedNumberBaseType):
+    """
+      the new number type to be created by the factory
+    """
+
+  newNumber.createClass(name, 'xsd:double', minValue, maxValue, minInclusive, maxInclusive)
+  return newNumber
+
+def makeIntType(name, minValue=None, maxValue=None, minInclusive=True, maxInclusive=True):
+  """
+    Creates a new float type that can be used as a content type with optional
+    restricted values.
+    @ In, name, string, Name of the type
+    @ In, minValue, int, a lower bound value, if None,
+      then this type will not have a lower bound.
+    @ In, maxValue, int, an upper bound value, if None,
+      then this type will not have an upper bound.
+    @ In, minInclusive, boolean, specifies whether the bound on minValue is
+      inclusive. Only used if minValue is not None.
+    @ In, maxInclusive, boolean, specifies whether the bound on maxValue is
+      inclusive. Only used if maxValue is not None.
+    @ Out, newNumber, InputData.RestrictedNumberBaseType, the new restricted number type.
+  """
+  class newNumber(RestrictedNumberBaseType):
+    """
+      the new number type to be created by the factory
+    """
+
+  newNumber.createClass(name, 'xsd:integer', minValue, maxValue, minInclusive, maxInclusive)
+  return newNumber
 
 def createXSD(outerElement):
   """

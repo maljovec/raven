@@ -3197,7 +3197,7 @@ class MultivariateNormal(NDimensionalDistributions):
     inputSpecification.addSub(CovarianceListParameterInput)
     inputSpecification.addSub(TransformationParameterInput)
 
-    MultivariateMethodType = InputData.makeEnumType("multivariateMethod","multivariateMethodType",["pca","spline"])
+    MultivariateMethodType = InputData.makeEnumType("multivariateMethod",["pca","spline"])
     inputSpecification.addParam("method", MultivariateMethodType, True)
 
     return inputSpecification
