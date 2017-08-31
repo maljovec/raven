@@ -10,19 +10,20 @@ import time
 from sklearn.decomposition import PCA
 from sklearn.discriminant_analysis import LinearDiscriminantAnalysis as LDA
 
-# filename = 'data/pima-indians-diabetes.csv'
-filename = 'data/letters.csv'
+filename = 'data/pima-indians-diabetes.csv'
 dataset = pd.read_csv(filename).as_matrix()
 n_folds = 12
 tuned_parameters = {'C': np.linspace(2,60,10)}
 
-svc = SVC(C=60, kernel='poly', degree=2, decision_function_shape='ovr', gamma='auto', shrinking=True, tol=1e-5, cache_size=8000, class_weight=None, max_iter=-1)
+svc = SVC(C=60, kernel='poly', degree=2, decision_function_shape='ovr', gamma='auto', shrinking=True, tol=1e-3, cache_size=8000, class_weight=None, max_iter=1e6)
 svc_cv = GridSearchCV(svc, tuned_parameters, cv = n_folds, refit=True)
 
 X = dataset[:,:-1]
 Y = dataset[:,-1]
 
-X = preprocessing.scale(X)
+scaler = preprocessing.MinMaxScaler()
+scaler.fit(X)
+X = scaler.transform(X)
 
 k_fold = KFold(n_folds)
 
