@@ -10,13 +10,13 @@ import time
 from sklearn.decomposition import PCA
 from sklearn.discriminant_analysis import LinearDiscriminantAnalysis as LDA
 
-filename = 'data/letters.csv'
+filename = 'data/mfeat.csv'
 dataset = pd.read_csv(filename).as_matrix()
-n_folds = 12
-tuned_parameters = {'C': np.linspace(2,100,10)}
 
-svc = SVC(C=60, kernel='poly', degree=5, decision_function_shape='ovr', gamma='auto', shrinking=True, tol=1e-3, cache_size=8000, class_weight=None, max_iter=1e6)
-svc_cv = GridSearchCV(svc, tuned_parameters, cv = n_folds, refit=True)
+
+
+svc = SVC(C=2, kernel='poly', degree=5, decision_function_shape='ovr', gamma='auto', shrinking=True, tol=1e-3, cache_size=8000, class_weight=None, max_iter=1e6)
+svc_cv = svc
 
 X = dataset[:,:-1]
 Y = dataset[:,-1]
@@ -25,14 +25,14 @@ scaler = preprocessing.MinMaxScaler()
 scaler.fit(X)
 X = scaler.transform(X)
 
-train = range(15000)
-test = range(15000,20000)
-
-
-
+test = []
+for i in range(10):
+    test += range(i*200,i*200+50)
+train = np.array(list(set(range(2000))-set(test)))
+test = np.array(test)
 
 for d in range(1,9):
-    for method in ['LDA', 'PCA', 'DBA']:
+    for method in ['PCA', 'LDA', 'DBA']:
 
         print(d,method)
 
@@ -54,7 +54,7 @@ for d in range(1,9):
         print('\tTransform Data: {:5.2f} s'.format(end-start))
         start = time.time()
 
-        ## Cross-validate for C
+        print(Y)
         test_model = svc_cv.fit(train_X, Y[train])
 
         end = time.time()
@@ -65,8 +65,6 @@ for d in range(1,9):
 
         end = time.time()
         print('\t    Score Data: {:5.2f} s'.format(end-start))
-
-
 
         print('D={} Error Rate: {:f}'.format(d, 1-score))
 # start = time.time()

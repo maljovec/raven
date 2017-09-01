@@ -27,9 +27,13 @@ X = scaler.transform(X)
 
 k_fold = KFold(n_folds)
 
+
+
+
+
 for d in range(1,9):
     for method in ['LDA', 'PCA', 'DBA']:
-        scores = [None]*n_folds
+        scores = [None]*1
         print(d,method)
         for k, (train, test) in enumerate(k_fold.split(X, Y)):
 
@@ -57,14 +61,14 @@ for d in range(1,9):
             print('\t      Fit Data: {:5.2f} s'.format(end-start))
             start = time.time()
 
-            scores[k] = test_model.score(test_X, Y[test])
+            scores = test_model.score(test_X, Y[test])
 
             end = time.time()
             print('\t    Score Data: {:5.2f} s'.format(end-start))
 
-            print("\t[fold {0}] C: {1:5.2f} error: {2:5.2f}".format(k, test_model.estimator.get_params()['C'], 1-scores[k]))
+            print("\t[fold {0}] C: {1:5.2f} error: {2:5.2f}".format(k, test_model.estimator.get_params()['C'], 1-scores))
             print("")
-        print('D={} Error Rate: {:f}'.format(d, 1-np.average(scores)))
+        print('D={} Error Rate: {:f}'.format(d, 1-scores))
 # start = time.time()
 # dbfe = DBFE_SVM(X,Y)
 # end = time.time()
