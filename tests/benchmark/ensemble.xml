@@ -1,0 +1,87 @@
+<?xml version="1.0" ?>
+<Simulation verbosity="debug">
+  <RunInfo>
+    <WorkingDir>.</WorkingDir>
+    <Sequence>sample</Sequence>
+    <batchSize>8</batchSize>
+    <internalParallel>True</internalParallel>
+  </RunInfo>
+
+  <Distributions>
+    <Uniform name="dist">
+      <lowerBound>0</lowerBound>
+      <upperBound>1</upperBound>
+    </Uniform>
+  </Distributions>
+
+  <Models>
+    <ExternalModel ModuleToLoad="ModelA" name="A" subType="">
+      <variables>X,Y,Aout,Bin</variables>
+    </ExternalModel>
+    <ExternalModel ModuleToLoad="ModelB" name="B" subType="">
+      <variables>Bin,Bout</variables>
+    </ExternalModel>
+    <EnsembleModel name="pipeline" subType="">
+      <Model class="Models" type="ExternalModel">
+        A
+        <Input class="DataObjects" type="PointSet">A_In</Input>
+        <TargetEvaluation class="DataObjects" type="PointSet">A_Out</TargetEvaluation>
+      </Model>
+      <Model class="Models" type="ExternalModel">
+        B
+        <Input class="DataObjects" type="PointSet">B_In</Input>
+        <TargetEvaluation class="DataObjects" type="PointSet">B_Out</TargetEvaluation>
+      </Model>
+    </EnsembleModel>
+  </Models>
+
+  <Samplers>
+    <MonteCarlo name="sampler">
+      <samplerInit>
+        <limit>20</limit>
+      </samplerInit>
+      <variable name="X">
+        <distribution>dist</distribution>
+      </variable>
+      <variable name="Y">
+        <distribution>dist</distribution>
+      </variable>
+    </MonteCarlo>
+  </Samplers>
+
+  <Steps>
+    <MultiRun name="sample">
+      <Input class="DataObjects" type="PointSet">A_In</Input>
+      <Input class="DataObjects" type="PointSet">B_In</Input>
+      <Model class="Models" type="EnsembleModel">pipeline</Model>
+      <Sampler class="Samplers" type="MonteCarlo">sampler</Sampler>
+      <Output class="DataObjects" type="PointSet">Final_Out</Output>
+      <Output class="DataObjects" type="PointSet">A_Out</Output>
+      <Output class="DataObjects" type="PointSet">B_Out</Output>
+    </MultiRun>
+  </Steps>
+
+  <DataObjects>
+    <PointSet name="A_In">
+      <Input>X,Y</Input>
+      <Output>OutputPlaceHolder</Output>
+    </PointSet>
+    <PointSet name="B_In">
+      <Input>Bin</Input>
+      <Output>OutputPlaceHolder</Output>
+    </PointSet>
+    <PointSet name="A_Out">
+      <Input>X,Y</Input>
+      <Output>Aout,Bin</Output>
+    </PointSet>
+    <PointSet name="B_Out">
+      <Input>Bin</Input>
+      <Output>Bout</Output>
+    </PointSet>
+    <PointSet name="Final_Out">
+      <Input>X,Y</Input>
+      <Output>Bout</Output>
+    </PointSet>
+  </DataObjects>
+
+</Simulation>
