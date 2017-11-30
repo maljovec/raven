@@ -5,7 +5,7 @@
 
 import time
 
-from DBFE import DBFE_SVM
+from DBFE import DBFE_SVM, DBFE_Clustered_SVM
 import pandas as pd
 import numpy as np
 from sklearn import preprocessing
@@ -47,16 +47,16 @@ train = np.array(list(set(range(2000))-set(test)))
 test = np.array(test)
 
 for d in range(1, 12):
-    for method in ['LDA','PCA','DBA']:
+    for method in ['DBA']:
 
         print(d, method)
 
 
         start = time.time()
         if method == 'DBA':
-            model = DBFE_SVM(X[train], Y[train], C=1000, kernel='rbf', degree=5)
-            train_X = model.transform(X[train].T, d).T
-            test_X = model.transform(X[test].T, d).T
+            model = DBFE_Clustered_SVM(X[train], Y[train], C=1000, kernel='rbf', degree=5)
+            train_X = model.transform(X[train], d)
+            test_X = model.transform(X[test], d)
         else:
             if method == 'PCA':
                 model = PCA(n_components=d).fit(X[train], Y[train])

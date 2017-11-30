@@ -222,6 +222,7 @@ class DBFE(object):
 
         ## degree p polynomial
         p = self.model.get_params()['degree']
+        kernel = self.model.get_params()['kernel']
 
         ## k classes
         k = len(self.model.n_support_)
@@ -254,19 +255,31 @@ class DBFE(object):
             ovo = (a, b)
             decisionIdx = b-1
 
-            summand = np.zeros(len(s))
-            sumWeights = 0
-            for j, xj in enumerate(self.model.support_vectors_):
-                if ovo != tuple(boundaries[j]):
-                    continue
+            if kernel == 'rbf':
+                summand = np.zeros(len(s))
+                for j, xj in enumerate(self.model.support_vectors_):
+                    if ovo != tuple(boundaries[j]):
+                        continue
 
-                numerator = self.model.dual_coef_[decisionIdx, j] * (np.dot(s, xj))**p
-                denominator = np.dot(s, xj)
-                coefficient = numerator/denominator
-                sumWeights += coefficient
-                summand += coefficient * xj
+                    coefficient = self.model.dual_coef_[decisionIdx, j] * (np.exp(-np.linalg.norm(s-xj)))
+                    summand += coefficient * (s-xj)
 
-            grads[i] = summand
+                grads[i] = summand
+            elif kernel == 'poly':
+                summand = np.zeros(len(s))
+                for j, xj in enumerate(self.model.support_vectors_):
+                    if ovo != tuple(boundaries[j]):
+                        continue
+
+                    numerator = self.model.dual_coef_[decisionIdx, j] * (np.dot(s, xj))**p
+                    denominator = np.dot(s, xj)
+                    coefficient = numerator/denominator
+                    summand += coefficient * xj
+
+                grads[i] = summand
+            else:
+                print('Unsupported kernel type: {}'.format(kernel))
+
             end = time.time()
 
         return grads
@@ -345,7 +358,7 @@ class DBFE_SVM(DBFE):
 
     def BuildModel(self):
         ## Train a support vector machine
-        svc = SVC(C=self.C, kernel=self.kernel, degree=self.degree, gamma='auto',
+        svc = SVC(C=self.C, kernel=self.kernel, degree=self.degree, gamma=1,
                   shrinking=True, tol=1e-3, cache_size=8000, class_weight=None,
                   max_iter=1e6)
         if self.n_folds > 0 and len(self.cv_parameters.keys()) > 0:
@@ -372,6 +385,7 @@ class DBFE_Clustered_SVM(DBFE_SVM):
         ## Remove degenerate normals (where did these come from? Could be an
         ## important question)
         idxsToKeep = np.nonzero(gradMags)[0]
+        self.filteredIndices = idxsToKeep
 
         Ni = grads[idxsToKeep]/gradMags[idxsToKeep]
 
@@ -379,43 +393,85 @@ class DBFE_Clustered_SVM(DBFE_SVM):
         ## Partition the data at this point
         ## TODO: define criteria for separating the data
         X = np.hstack((self.S[idxsToKeep], Ni))
-        connectivity = np.zeros(X.shape[0], X.shape[0])
 
-        d = self.S.shape[1]
-        for i in enumerate(X):
-            xi = X[i]
-            for j in enumerate(X):
-                if i == j:
-                    continue
-                xj = X[j]
-                euclidean = np.linalg.norm(xi[:d]-xj[:d])
-                cosine = distance.cosine(xi[d:], xj[d:])
+        if True:
+            # X = np.loadtxt('simple_bwr_ls.csv', delimiter=',')
+            connectivity = np.loadtxt('connectivity.csv', delimiter=',')
+            self.clusterIds = np.loadtxt('spectralClustering5.csv', delimiter=',')
+            beta = 1
+            similarity = np.exp(-beta * connectivity / connectivity.std())
+            print(similarity.shape)
+        else:
+            connectivity = np.zeros((X.shape[0], X.shape[0]))
 
+            print('Bulding connectivity graph: ', end='')
+            start = time.time()
+            ## Allows downweighting of the euclidean distance vs cosine distance
+            alpha = 0.5
+            d = self.S.shape[1]
+            for i,xi in enumerate(X):
+                for j,xj in enumerate(X):
+                    if i == j:
+                        continue
 
-        clustering = sklearn.cluster.AgglomerativeClustering(n_clusters=10,
-                                                             affinity='precomputed',
-                                                             connectivity=connectivity,
-                                                             linkage='average')
-        labels = clustering.fit_predict(X)
+                    euclidean = np.linalg.norm(xi[:d]-xj[:d])
+                    cosine = distance.cosine(xi[d:], xj[d:])
+                    connectivity[j, i] = connectivity[i, j] = alpha*euclidean + (1-alpha)*cosine
 
-        # start = time.time()
-        ## Construct the Decision Boundary Scatter Matrix (DBSM)
-        DBSM = np.zeros((Ni.shape[1], Ni.shape[1]))
-        for ni in Ni:
-            DBSM += np.outer(ni, ni)
-        DBSM /= float(len(Ni))
+            end = time.time()
+            print('{} s'.format(end-start))
+            # print('connecitivity shape: {}'.format(connectivity.shape))
+            np.savetxt('simple_bwr_ls.csv', X, delimiter=',')
+            np.savetxt('simple_connectivity.csv', connectivity, delimiter=',')
 
-        # end = time.time()
-        # print('\t\tDBSM: {} s'.format(end-start))
+            print('Clustering: ', end='')
+            start = time.time()
+            clustering = cluster.SpectralClustering(n_clusters=5, affinity='precomputed')
+            self.clusterIds = clustering.fit_predict(similarity)
+            np.savetxt('spectralClustering5.csv', self.clusterIds, delimiter=',')
+            end = time.time()
+            print('{} s'.format(end-start))
+        
+        labels = np.unique(self.clusterIds)
+        self.features = {}
+        for label in labels:
+            idxs = np.where(self.clusterIds == label)
 
-        # start = time.time()
-        values, vectors = np.linalg.eig(DBSM)
-        # end = time.time()
-        # print('\t\tEigendecomposition: {} s'.format(end-start))
+            Nl = Ni[idxs]
 
-        features = []
-        for value, vector in zip(values, vectors):
-            if value != 0:
-                features.append(vector)
+            # start = time.time()
+            ## Construct the Decision Boundary Scatter Matrix (DBSM)
+            DBSM = np.zeros((Nl.shape[1], Nl.shape[1]))
+            for ni in Nl:
+                DBSM += np.outer(ni, ni)
+            DBSM /= float(len(Nl))
 
-        self.features = np.array(features)
+            # end = time.time()
+            # print('\t\tDBSM: {} s'.format(end-start))
+
+            # start = time.time()
+            values, vectors = np.linalg.eig(DBSM)
+            # end = time.time()
+            # print('\t\tEigendecomposition: {} s'.format(end-start))
+
+            features = []
+            for value, vector in zip(values, vectors):
+                if value != 0:
+                    features.append(vector)
+
+            self.features[label] = np.array(features)
+
+    def transform(self, X, maxDimensionality=2):
+
+        embedding = []
+        
+        Xs = self.S[self.filteredIndices]
+        for x in X:
+            deltas = Xs - x
+            dist_2 = np.einsum('ij,ij->i', deltas, deltas)
+            minIdx = np.argmin(dist_2)
+            predictedLabel = self.clusterIds[minIdx]
+
+            maxDimensionality = min(self.features[predictedLabel].shape[0], maxDimensionality)
+            embedding.append(self.features[predictedLabel][:maxDimensionality].dot(x))
+        return np.array(embedding)
